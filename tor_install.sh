@@ -1,14 +1,15 @@
-#!/bin/sh
-
+#!/bin/csh
 ifconfig
 
 echo "							"
 echo "	Digite sua placa WAN	"
 echo "							"
+
 read wan
 INTERFACE_WAN=$wan
 #SE O RESULTADO = 1 ENTAO ESTA PRESENTE
 #SE RESULTADO = 0 ENTAO NAO ESTA PRESENTE
+
 CHECK=$(ifconfig -a | grep $INTERFACE_WAN|wc -l)
 if [ $CHECK -eq 1  ]
 	then
@@ -22,9 +23,10 @@ fi
 echo "							"
 echo "	Digite sua placa LAN	"
 echo "							"
-read lan
 
+read lan
 INTERFACE_LAN=$lan
+
 #SE O RESULTADO = 1 ENTAO ESTA PRESENTE
 #SE RESULTADO = 0 ENTAO NAO ESTA PRESENTE
 CHECK=$(ifconfig -a | grep $INTERFACE_LAN|wc -l)
@@ -38,26 +40,20 @@ else
 	echo "A INTERFACE $INTERFACE_LAN NAO ESTA ATIVA" && exit
 fi
 
-#
-# Install TOR
-#
-export PKG_PATH=http://ftp.usa.openbsd.org/pub/OpenBSD/`uname -r`/packages/`arch -s` 
+# Install TOR in BRAZIL
+export PKG_PATH=https://openbsd.c3sl.ufpr.br/pub/OpenBSD/`uname -r`/packages/`arch -s` 
 echo `pkg_add tor`
 
-#
 # Config LAN in em1
-#
 echo "
 
 inet 10.10.10.1 255.255.255.0
 up"	\
 	>	/etc/hostname.$lan
 
-#
 # Config /etc/pf.conf
-#
-
 echo "
+
 # declare network variables
 ext_if=\"$wan\"
 int_if=\"$lan\"
@@ -87,40 +83,34 @@ pass out on \$ext_if from { \$int_if } to any nat-to (\$ext_if)
 # Normal traffic - Pass all traffic out of fxp0 (to WAN) after translation
 pass out on \$ext_if from (\$ext_if) to any modulate state
 pass in on \$ext_if proto tcp from any to any port {22} " \
+
 	>	/etc/pf.conf
 
-
-#
 # Config TORRC in /etc/tor/torrc
-#
-
 echo "
+
 AutomapHostsOnResolve 1
 DNSPort 53
 TransPort 9040" \
 	>	/etc/tor/torrc
 
-#
 # Config DHCPD in /etc/dhcpd.conf
-#
-
 echo "
+
 subnet 10.10.10.0 netmask 255.255.255.0 {
     option routers 10.10.10.1;
     range 10.10.10.100 10.10.10.200;
-    option domain-name-servers 8.8.8.8;
+#    option domain-name-servers 8.8.8.8;
 
 }"	\
 	>	/etc/dhcpd.conf
 
-#
 # AutoStart dhcpd and tor
-#
-
 echo "
+
 dhcpd_flags=\"$ext_if\"
 pkg_scripts=\"tor\"
 "	\
 	>	/etc/rc.conf.local
 
-reboot
+
