@@ -1,6 +1,11 @@
 " vim-bootstrap b990cad
 
 "*****************************************************************************
+"   mv archive generate.vim
+"       % mv generate.vim ~/.vimrc
+"   install plugins use command
+"       "% vim +PlugInstall +qall
+"*****************************************************************************
 "" Vim-PLug core
 "*****************************************************************************
 if has('vim_starting')
