@@ -1,0 +1,2 @@
+arquivos ocultos
+	$ ls -all
